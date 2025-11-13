@@ -3,445 +3,203 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Vocabulary Trainer – Study & Test (localStorage)</title>
+  <title>Vocabulary Trainer – The Twits</title>
   <style>
-    :root{
-      --bg:#0b1220;--card:#111a2e;--ink:#e6eefc;--muted:#a8b3cf;--edge:#213055;--accent:#22c55e;--accent2:#3b82f6;--error:#ef4444;
-    }
+    :root { --bg:#0b1220; --card:#1e293b; --ink:#f1f5f9; --muted:#9fb0c9; --edge:#334155; --accent:#38bdf8; --good:#22c55e; --bad:#ef4444; }
     *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(1200px 600px at 15% -10%, #14233f, var(--bg));color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;line-height:1.45;padding:16px}
-    .wrap{max-width:1100px;margin:0 auto}
-    h1{margin:.2rem 0 .5rem;font-size:clamp(1.2rem,2.2vw,1.8rem)}
-    .sub{color:var(--muted);margin:0 0 14px}
-    .grid{display:grid;gap:14px}
-    .row{display:grid;gap:14px}
-    @media(min-width:960px){.row{grid-template-columns:1fr 1fr}}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.08)), var(--card);border:1px solid var(--edge);border-radius:14px;padding:14px;box-shadow:0 8px 22px rgba(0,0,0,.35)}
-    .card h2{margin:.1rem 0 .5rem;font-size:1.05rem}
-    label{font-weight:700;margin-right:8px}
-    select,input,textarea,button{width:100%;border:1px solid #334155;background:#0b152a;color:var(--ink);border-radius:10px;padding:10px 12px;font-size:15px}
-    button{cursor:pointer;border:none;background:linear-gradient(180deg,var(--accent2),#1e40af);font-weight:800}
-    button.secondary{background:linear-gradient(180deg,var(--accent),#15803d)}
-    button.ghost{background:transparent;border:1px solid #334155}
-    .bar{display:flex;gap:8px;flex-wrap:wrap}
-    .kpis{display:flex;gap:10px;flex-wrap:wrap}
-    .kpi{background:#0b152a;border:1px solid #2b3a60;border-radius:10px;padding:8px 10px;font-size:13px}
-    .flash{font-size:clamp(1.1rem,2.6vw,1.6rem);min-height:120px;display:flex;align-items:center;justify-content:center;background:#0b152a;border:1px dashed #38507e;border-radius:12px;padding:12px;text-align:center}
-    .hint{font-size:13px;color:var(--muted);margin:6px 0}
-    .ok{color:#86efac}
-    .bad{color:#fca5a5}
-    .small{font-size:12px;color:var(--muted)}
-    .list{max-height:220px;overflow:auto;background:#0b152a;border:1px solid #334155;border-radius:10px;padding:10px}
-    table{width:100%;border-collapse:collapse}
-    td,th{border-bottom:1px solid #22314f;padding:6px 4px;text-align:left;font-size:14px}
-    .right{text-align:right}
-    .pill{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #2b3a60;background:#0b152a;font-size:12px}
-    .good{color:#22c55e;border-color:#14532d}
-    .warn{color:#f59e0b;border-color:#7c2d12}
-    .danger{color:#ef4444;border-color:#7f1d1d}
-    .spacer{height:8px}
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--ink); margin: 0; padding: 1.5rem; line-height: 1.5; }
+    h1 { color: var(--accent); margin-bottom: .25rem; }
+    .sub{color:var(--muted); margin:0 0 1rem}
+    .section { background: var(--card); border: 1px solid var(--edge); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+    .row{display:grid; gap:12px}
+    @media(min-width:900px){ .row{ grid-template-columns:1fr 1fr; } }
+    select, input, button { width: 100%; border-radius: 8px; border: 1px solid var(--edge); background: #0f172a; color: white; padding: .6rem .75rem; font-size: 1rem; }
+    button { background: var(--accent); color: #081323; border: none; font-weight: 800; cursor: pointer; }
+    button.ghost{ background: transparent; border:1px solid var(--edge); color: var(--ink); }
+    .flash { font-size: 1.35rem; background: #0f172a; border: 1px dashed var(--edge); border-radius: 10px; text-align: center; padding: 2rem 1rem; min-height: 120px; margin-bottom: .5rem; }
+    .feedback { margin-top: .5rem; font-weight: bold; }
+    .ok { color: var(--good); }
+    .bad { color: var(--bad); }
+    .bar{display:flex; gap:8px; flex-wrap:wrap}
+    .muted{color:var(--muted); font-size:.9rem}
+    .hide{display:none}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Vocabulary Trainer – Study & Test</h1>
-    <p class="sub">Elever tränar glosor i "Study" (flashcards) eller "Practice" (skriv svaret), och kan sedan göra ett "Test". Alla resultat sparas i <strong>localStorage</strong> per elev/dator.</p>
+  <h1>Vocabulary Trainer – The Twits</h1>
+  <p class="sub">Välj en ordlista, träna först med <strong>flashcards</strong> och testa sedan att <strong>skriva orden</strong>. Allt sparas lokalt i din webbläsare.</p>
 
-    <div class="row">
-      <!-- Left: Controls -->
-      <div class="card">
-        <h2>1) Choose list</h2>
-        <div class="bar">
-          <select id="lesson"></select>
-          <button id="newListBtn" class="ghost">Add list…</button>
-          <button id="editListBtn" class="ghost">Edit words</button>
-        </div>
-        <div class="hint">Läraren kan importera/klistra in ord (JSON eller CSV). Exempeldata finns inbyggt.</div>
-        <div class="kpis" id="kpis"></div>
-      </div>
-
-      <!-- Right: Mode -->
-      <div class="card">
-        <h2>2) Choose mode</h2>
-        <div class="bar">
-          <button id="modeStudy" class="secondary">Study</button>
-          <button id="modePractice">Practice (type)</button>
-          <button id="modeTest">Test</button>
-        </div>
-        <div class="hint">Tips: Börja i Study, öva i Practice och avsluta med ett Test. Resultat sparas automatiskt.</div>
-      </div>
+  <div class="section">
+    <label for="listSelect">Välj ordlista:</label>
+    <select id="listSelect"></select>
+    <div class="bar" style="margin-top:8px">
+      <button id="startFlash">Starta Flashcards</button>
+      <button id="startPractice" class="ghost">Starta Skrivtest</button>
     </div>
+    <p class="muted" id="progressText"></p>
+  </div>
 
-    <!-- Study -->
-    <div class="grid" id="studyView" style="display:none">
-      <div class="card">
-        <h2>Study – Flashcards</h2>
-        <div class="flash" id="flash">—</div>
-        <div class="bar" style="margin-top:10px">
-          <button id="revealBtn">Reveal meaning</button>
-          <button id="againBtn">Again</button>
-          <button id="gotBtn" class="secondary">Got it</button>
-        </div>
-        <div class="hint">Tryck "Reveal" för att se betydelsen. Markera om du kunde ordet (Got it) eller behöver se det igen (Again).</div>
-      </div>
-      <div class="card">
-        <h2>Words in this list</h2>
-        <div id="wordList" class="list"></div>
-      </div>
+  <!-- FLASHCARDS -------------------------------------------------------->
+  <div class="section hide" id="flashView">
+    <h3>Flashcards</h3>
+    <div class="flash" id="flashCard">—</div>
+    <div class="bar">
+      <button id="revealBtn">Visa betydelsen</button>
+      <button id="againBtn" class="ghost">Se igen</button>
+      <button id="gotBtn">Jag kunde den</button>
     </div>
-
-    <!-- Practice -->
-    <div class="grid" id="practiceView" style="display:none">
-      <div class="card">
-        <h2>Practice – Type the translation</h2>
-        <div class="flash" id="pQuestion">—</div>
-        <input id="pAnswer" placeholder="Type the translation…" />
-        <div class="bar" style="margin-top:8px">
-          <button id="pCheck" class="secondary">Check</button>
-          <button id="pSkip" class="ghost">Skip</button>
-        </div>
-        <div id="pFeedback" class="hint"></div>
-      </div>
-      <div class="card">
-        <h2>Progress</h2>
-        <div class="kpis" id="practiceKpis"></div>
-        <div class="small">Auto-saves per word: correct/incorrect counts.</div>
-      </div>
-    </div>
-
-    <!-- Test -->
-    <div class="grid" id="testView" style="display:none">
-      <div class="card" id="testSetup">
-        <h2>Test setup</h2>
-        <div class="bar">
-          <label for="qCount">Questions</label>
-          <input id="qCount" type="number" min="5" max="100" value="10" />
-          <label for="direction">Direction</label>
-          <select id="direction">
-            <option value="term2def">Term → Definition</option>
-            <option value="def2term">Definition → Term</option>
-          </select>
-          <button id="startTest" class="secondary">Start Test</button>
-        </div>
-        <div class="hint">Testresultat sparas i historiken nedan.</div>
-      </div>
-
-      <div class="card" id="testRun" style="display:none">
-        <h2 id="tHeader">Test</h2>
-        <div class="flash" id="tPrompt">—</div>
-        <input id="tInput" placeholder="Type your answer…" />
-        <div class="bar" style="margin-top:8px">
-          <button id="tCheck" class="secondary">Check</button>
-          <button id="tDontKnow" class="ghost">I don't know</button>
-        </div>
-        <div id="tFeedback" class="hint"></div>
-      </div>
-
-      <div class="card" id="testSummary" style="display:none">
-        <h2>Summary</h2>
-        <div id="sumText"></div>
-        <div class="bar" style="margin-top:8px">
-          <button id="copySummary" class="ghost">Copy summary</button>
-          <button id="resetTest">New test</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>History</h2>
-        <div class="list" id="history"></div>
-        <div class="bar" style="margin-top:8px">
-          <button id="clearHistory" class="ghost">Clear history</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Data management -->
-    <div class="card">
-      <h2>Manage data (teacher)</h2>
-      <div class="bar">
-        <button id="exportBtn" class="ghost">Export JSON</button>
-        <button id="importBtn" class="ghost">Import JSON/CSV</button>
-        <button id="clearAllBtn" class="ghost">Reset ALL local data</button>
-      </div>
-      <div class="spacer"></div>
-      <textarea id="dataArea" placeholder="Export will appear here… You can also paste JSON or CSV (term,definition) and click Import."></textarea>
-      <div class="small">Format JSON: { "Lesson name": [ {"term":"word","definition":"meaning"}, … ] }</div>
+    <p class="muted">Tips: När du gått igenom alla kort kan du gå vidare till skrivtest.</p>
+    <div class="bar" style="margin-top:8px">
+      <button id="toPractice" class="ghost">Gå till Skrivtest</button>
     </div>
   </div>
 
+  <!-- PRACTICE (skriva orden) ------------------------------------------>
+  <div class="section hide" id="practiceView">
+    <h3>Skriv test – Skriv det engelska ordet</h3>
+    <p class="muted">Du får den svenska betydelsen. Skriv det <em>engelska</em> ordet.</p>
+    <div class="flash" id="pPrompt">—</div>
+    <input id="pAnswer" placeholder="Skriv det engelska ordet…" />
+    <div class="bar" style="margin-top:8px">
+      <button id="pCheck">Kolla</button>
+      <button id="pSkip" class="ghost">Hoppa över</button>
+    </div>
+    <div id="pFeedback" class="feedback"></div>
+  </div>
+
   <script>
-    // --- Storage helpers ----------------------------------------------------
-    const LSK = {
-      DATA: 'vocab:data',           // JSON of lessons & words
-      PROG: 'vocab:progress',       // per-word progress
-      HIST: 'vocab:history',        // test attempts
-      LAST: 'vocab:lastLesson'      // last selected lesson
-    };
-
-    const $ = id => document.getElementById(id);
-
-    function loadJSON(key, fallback){
-      try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch{ return fallback; }
-    }
-    function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
-
-    // --- Default demo data --------------------------------------------------
-    const defaultData = {
-      "Unit 1: School & Daily Life": [
-        { term: "assignment", definition: "a piece of work given to students" },
-        { term: "borrow", definition: "to take and use something that belongs to someone else" },
-        { term: "deadline", definition: "the latest time to finish something" },
-        { term: "timetable", definition: "a schedule of classes or events" },
-        { term: "principal", definition: "the head of a school" }
+    // -------------------------------------------------- Data
+    const WORD_LISTS = {
+      "The Twits 1": [
+        { term: "shrunk", definition: "became smaller in size – krympte" },
+        { term: "dangling", definition: "hanging loosely – hängande" },
+        { term: "terrible", definition: "very bad or unpleasant – hemsk" },
+        { term: "disease", definition: "illness or sickness – sjukdom" },
+        { term: "bundle", definition: "a group of things tied or wrapped together – knyte, bunt" },
+        { term: "solemn", definition: "serious and dignified – högtidlig, allvarlig" },
+        { term: "cure", definition: "make someone healthy again – bota" },
+        { term: "clutching", definition: "holding tightly – hålla hårt i, klamra sig fast" }
       ],
-      "Unit 2: Feelings & Descriptions": [
-        { term: "anxious", definition: "worried and nervous" },
-        { term: "cautious", definition: "careful to avoid problems or danger" },
-        { term: "relieved", definition: "happy because something unpleasant has ended" },
-        { term: "exhausted", definition: "extremely tired" },
-        { term: "confident", definition: "sure of one's abilities" }
+      "The Twits 2": [
+        { term: "neatly", definition: "tidily or carefully – prydligt" },
+        { term: "gradually", definition: "slowly over time – gradvis" },
+        { term: "notice", definition: "to become aware of – lägga märke till" },
+        { term: "enjoy", definition: "to take pleasure in – njuta av" },
+        { term: "suddenly", definition: "quickly and unexpectedly – plötsligt" },
+        { term: "grinning", definition: "smiling widely – flinande" },
+        { term: "horribly", definition: "in a terrible or awful way – hemskt" },
+        { term: "goat", definition: "an animal with horns – get" },
+        { term: "comparison", definition: "examining similarities and differences – jämförelse" },
+        { term: "trembly", definition: "shaking slightly – darrig" }
       ]
     };
 
-    // --- App state ----------------------------------------------------------
-    let DATA = loadJSON(LSK.DATA, defaultData);
-    let PROG = loadJSON(LSK.PROG, {}); // structure: PROG[lesson][term] = {c:0,w:0}
-    let HIST = loadJSON(LSK.HIST, []);
+    // -------------------------------------------------- Helpers
+    const $ = (id)=>document.getElementById(id);
+    const listSelect = $('listSelect');
+    const progressText = $('progressText');
 
-    // --- UI init ------------------------------------------------------------
-    const lessonSel = $('lesson');
-    function refreshLessonOptions(){
-      lessonSel.innerHTML = '';
-      Object.keys(DATA).forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name; opt.textContent = name; lessonSel.appendChild(opt);
-      });
-      const last = localStorage.getItem(LSK.LAST);
-      if(last && DATA[last]) lessonSel.value = last;
-      else lessonSel.selectedIndex = 0;
+    Object.keys(WORD_LISTS).forEach(name=>{
+      const opt=document.createElement('option'); opt.value=name; opt.textContent=name; listSelect.appendChild(opt);
+    });
+
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+    function keyProgress(list){ return `vocab:progress:${list}`; }
+    function loadProgress(list){ try{ return JSON.parse(localStorage.getItem(keyProgress(list)))||{flash:{known:0,total:WORD_LISTS[list].length}, practice:{correct:0,wrong:0}} }catch{ return {flash:{known:0,total:WORD_LISTS[list].length}, practice:{correct:0,wrong:0}} }
+    }
+    function saveProgress(list, obj){ localStorage.setItem(keyProgress(list), JSON.stringify(obj)); }
+    function show(el){ el.classList.remove('hide'); }
+    function hide(el){ el.classList.add('hide'); }
+
+    // -------------------------------------------------- State
+    let currentListName = Object.keys(WORD_LISTS)[0];
+    let flashQueue = []; let flashIdx = 0; let showingDef=false;
+    let practiceQueue = []; let currentP=null; let prog=null;
+
+    listSelect.addEventListener('change',()=>{ currentListName=listSelect.value; updateKpis(); });
+
+    function updateKpis(){
+      prog = loadProgress(currentListName);
+      progressText.textContent = `Flashcards kända: ${prog.flash.known}/${prog.flash.total}  •  Skrivtest: ✔ ${prog.practice.correct} / ✖ ${prog.practice.wrong}`;
+      saveProgress(currentListName, prog);
     }
 
-    function ensureProgForLesson(lesson){
-      PROG[lesson] ||= {};
-      DATA[lesson].forEach(({term})=>{ PROG[lesson][term] ||= {c:0,w:0}; });
-      saveJSON(LSK.PROG, PROG);
-    }
+    // ------------------------------ Flashcards
+    const flashView = $('flashView');
+    const flashCard = $('flashCard');
+    const revealBtn = $('revealBtn');
+    const againBtn = $('againBtn');
+    const gotBtn = $('gotBtn');
+    const toPractice = $('toPractice');
 
-    function renderKpis(){
-      const k = $('kpis'); k.innerHTML = '';
-      const lesson = lessonSel.value; if(!lesson) return;
-      ensureProgForLesson(lesson);
-      const words = DATA[lesson];
-      const total = words.length;
-      const known = words.filter(w => (PROG[lesson][w.term]?.c||0) >= 3).length;
-      const practiced = words.filter(w => (PROG[lesson][w.term]?.c||0)+(PROG[lesson][w.term]?.w||0) > 0).length;
-      const div = (txt)=>{const d=document.createElement('div'); d.className='kpi'; d.textContent=txt; return d;};
-      k.append(div(`Words: ${total}`));
-      k.append(div(`Practiced: ${practiced}/${total}`));
-      k.append(div(`Mastered (≥3 correct): ${known}`));
-    }
-
-    // --- Study mode ---------------------------------------------------------
-    let studyIdx = 0; let showDef = false; let studyOrder = [];
-    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
-
-    function startStudy(){
-      const lesson = lessonSel.value; ensureProgForLesson(lesson);
-      studyOrder = shuffle([...DATA[lesson]]);
-      studyIdx = 0; showDef=false;
-      renderFlash(); renderWordList(); showView('study');
-    }
+    $('startFlash').addEventListener('click', ()=>{
+      currentListName = listSelect.value; prog = loadProgress(currentListName);
+      flashQueue = shuffle([...WORD_LISTS[currentListName]]);
+      flashIdx=0; showingDef=false;
+      hide($('practiceView')); show(flashView); renderFlash(); updateKpis();
+    });
 
     function renderFlash(){
-      const f = $('flash'); const lesson = lessonSel.value; const item = studyOrder[studyIdx];
-      if(!item){ f.textContent = 'Done! Restart Study to continue.'; return; }
-      f.innerHTML = showDef ? `<div><strong>${item.term}</strong><br/><span style="color:#a5b4fc">${item.definition}</span></div>` : `<div><strong>${item.term}</strong></div>`;
+      const item = flashQueue[flashIdx];
+      if(!item){ flashCard.textContent='Klar med flashcards! Bra jobbat.'; return; }
+      flashCard.innerHTML = showingDef
+        ? `<div><strong>${item.term}</strong><br/><span style="color:#c7d2fe">${item.definition}</span></div>`
+        : `<div><strong>${item.term}</strong></div>`;
     }
 
-    function renderWordList(){
-      const box = $('wordList'); const lesson = lessonSel.value; ensureProgForLesson(lesson);
-      box.innerHTML = '<table><thead><tr><th>Term</th><th>Definition</th><th class="right">Stats</th></tr></thead><tbody></tbody></table>';
-      const tbody = box.querySelector('tbody');
-      DATA[lesson].forEach(({term,definition})=>{
-        const s = PROG[lesson][term]||{c:0,w:0};
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${term}</td><td>${definition}</td><td class="right"><span class="pill ${s.c>=3?'good':(s.c>=1?'warn':'')}">✔ ${s.c}</span> <span class="pill ${s.w>=1?'danger':''}">✖ ${s.w||0}</span></td>`;
-        tbody.appendChild(tr);
-      });
-    }
+    revealBtn.addEventListener('click',()=>{ showingDef=!showingDef; renderFlash(); });
+    againBtn.addEventListener('click',()=>{ if(!flashQueue[flashIdx]) return; // send current to end
+      flashQueue.push(flashQueue[flashIdx]); flashIdx++; showingDef=false; renderFlash(); });
+    gotBtn.addEventListener('click',()=>{ if(!flashQueue[flashIdx]) return; flashIdx++; showingDef=false; prog.flash.known=Math.min(prog.flash.total, (prog.flash.known||0)+1); saveProgress(currentListName,prog); renderFlash(); updateKpis(); });
+    toPractice.addEventListener('click',()=>{ startPractice(); });
 
-    $('revealBtn').addEventListener('click',()=>{ showDef = !showDef; renderFlash(); });
-    $('againBtn').addEventListener('click',()=>{ const lesson=lessonSel.value; const item=studyOrder[studyIdx]; PROG[lesson][item.term].w++; saveJSON(LSK.PROG,PROG); showDef=false; studyIdx=(studyIdx+1)%studyOrder.length; renderFlash(); renderKpis(); renderWordList(); });
-    $('gotBtn').addEventListener('click',()=>{ const lesson=lessonSel.value; const item=studyOrder[studyIdx]; PROG[lesson][item.term].c++; saveJSON(LSK.PROG,PROG); showDef=false; studyIdx=(studyIdx+1)%studyOrder.length; renderFlash(); renderKpis(); renderWordList(); });
+    // ------------------------------ Practice (skriv engelska ordet)
+    const practiceView = $('practiceView');
+    const pPrompt = $('pPrompt');
+    const pAnswer = $('pAnswer');
+    const pFeedback = $('pFeedback');
 
-    // --- Practice mode ------------------------------------------------------
-    let pQueue = []; let currentP=null; let correctP=0, wrongP=0;
+    $('startPractice').addEventListener('click', startPractice);
 
     function startPractice(){
-      const lesson=lessonSel.value; ensureProgForLesson(lesson);
-      pQueue = shuffle([...DATA[lesson]]);
-      correctP=wrongP=0;
-      nextPractice(); showView('practice'); renderPracticeKpis();
+      currentListName = listSelect.value; prog = loadProgress(currentListName);
+      practiceQueue = shuffle([...WORD_LISTS[currentListName]]);
+      hide(flashView); show(practiceView); nextPractice(); updateKpis();
     }
 
-    function normalize(s){ return s.toLowerCase().trim().replace(/\s+/g,' '); }
+    function swedishFromDef(def){
+      const parts = def.split('–');
+      return (parts[1]||parts[0]).trim();
+    }
 
     function nextPractice(){
-      currentP = pQueue.shift();
-      if(!currentP){ $('pQuestion').textContent = 'All done! Restart Practice to try again.'; return; }
-      $('pQuestion').textContent = currentP.term;
-      $('pAnswer').value=''; $('pFeedback').textContent='';
+      if(!practiceQueue.length){ pPrompt.textContent='Klar! Du har gjort skrivtestet för denna lista.'; pFeedback.textContent=''; return; }
+      currentP = practiceQueue.shift();
+      pPrompt.textContent = swedishFromDef(currentP.definition);
+      pAnswer.value=''; pFeedback.textContent=''; pAnswer.focus();
     }
 
-    function renderPracticeKpis(){
-      const k=$('practiceKpis'); k.innerHTML='';
-      const add=(t)=>{const d=document.createElement('div'); d.className='kpi'; d.textContent=t; k.appendChild(d);};
-      add(`Correct: ${correctP}`); add(`Wrong: ${wrongP}`); add(`Remaining: ${pQueue.length+ (currentP?1:0)}`);
-    }
-
-    $('pCheck').addEventListener('click',()=>{
-      if(!currentP) return; const ans=normalize($('pAnswer').value); const ok = ans===normalize(currentP.definition);
-      const fb=$('pFeedback');
-      if(ok){ fb.innerHTML = `<span class="ok">✔ Correct!</span> ${currentP.term} = <strong>${currentP.definition}</strong>`; correctP++; PROG[lessonSel.value][currentP.term].c++; }
-      else{ fb.innerHTML = `<span class="bad">✖</span> Correct answer: <strong>${currentP.definition}</strong>`; wrongP++; PROG[lessonSel.value][currentP.term].w++; }
-      saveJSON(LSK.PROG,PROG); renderPracticeKpis();
-      setTimeout(()=>{ nextPractice(); renderPracticeKpis(); }, 600);
+    $('pCheck').addEventListener('click', ()=>{
+      if(!currentP) return;
+      const ans = pAnswer.value.trim().toLowerCase();
+      const correct = currentP.term.toLowerCase();
+      if(ans && ans === correct){
+        pFeedback.innerHTML = `<span class='ok'>✔ Rätt!</span> ${currentP.term} – ${currentP.definition}`;
+        prog.practice.correct = (prog.practice.correct||0)+1;
+      } else {
+        pFeedback.innerHTML = `<span class='bad'>✖ Fel.</span> Rätt svar: <strong>${currentP.term}</strong> – ${currentP.definition}`;
+        prog.practice.wrong = (prog.practice.wrong||0)+1;
+      }
+      saveProgress(currentListName, prog);
+      updateKpis();
+      setTimeout(nextPractice, 800);
     });
 
-    $('pSkip').addEventListener('click',()=>{ if(!currentP) return; pQueue.push(currentP); nextPractice(); renderPracticeKpis(); });
+    $('pSkip').addEventListener('click', ()=>{ if(!currentP) return; practiceQueue.push(currentP); nextPractice(); });
 
-    // --- Test mode ----------------------------------------------------------
-    let T=null; // holds test state
-    function startTest(){
-      const lesson=lessonSel.value; const n=Math.max(5, Math.min(100, parseInt($('qCount').value)||10));
-      const dir = $('direction').value; const pool = shuffle([...DATA[lesson]]).slice(0,n);
-      T = {lesson, dir, pool, i:0, correct:0, wrong:0, items:[]};
-      $('testSetup').style.display='none'; $('testRun').style.display='block'; $('testSummary').style.display='none';
-      renderTestQ();
-    }
-
-    function renderTestQ(){
-      const it = T.pool[T.i]; if(!it){ return finishTest(); }
-      const prompt = T.dir==='term2def' ? it.term : it.definition;
-      $('tHeader').textContent = `Question ${T.i+1} / ${T.pool.length}`;
-      $('tPrompt').textContent = prompt;
-      $('tInput').value=''; $('tInput').focus(); $('tFeedback').textContent='';
-    }
-
-    function checkTest(ansGiven){
-      const it=T.pool[T.i]; const correct = T.dir==='term2def' ? it.definition : it.term;
-      const ok = normalize(ansGiven)===normalize(correct);
-      if(ok){ T.correct++; $('tFeedback').innerHTML = `<span class="ok">✔ Correct</span>`; PROG[T.lesson][it.term].c++; }
-      else{ T.wrong++; $('tFeedback').innerHTML = `<span class="bad">✖</span> Correct: <strong>${correct}</strong>`; PROG[T.lesson][it.term].w++; }
-      T.items.push({term:it.term, expected:correct, given:ansGiven, ok});
-      saveJSON(LSK.PROG,PROG);
-      T.i++;
-      setTimeout(renderTestQ, 500);
-    }
-
-    function finishTest(){
-      $('testRun').style.display='none'; $('testSummary').style.display='block';
-      const score = Math.round(100*T.correct/(T.correct+T.wrong||1));
-      const when = new Date().toISOString();
-      const entry = { when, lesson:T.lesson, q:T.pool.length, correct:T.correct, wrong:T.wrong, score, dir:T.dir };
-      HIST.unshift(entry); saveJSON(LSK.HIST,HIST);
-      $('sumText').innerHTML = `<div class="kpis">
-        <div class="kpi">Lesson: ${entry.lesson}</div>
-        <div class="kpi">Score: ${entry.score}%</div>
-        <div class="kpi">Correct: ${entry.correct}</div>
-        <div class="kpi">Wrong: ${entry.wrong}</div>
-        <div class="kpi">Direction: ${entry.dir==='term2def'?'Term→Def':'Def→Term'}</div>
-      </div>`;
-      renderHistory(); renderKpis();
-    }
-
-    $('tCheck').addEventListener('click',()=> checkTest($('tInput').value));
-    $('tDontKnow').addEventListener('click',()=> checkTest(''));
-    $('startTest').addEventListener('click', startTest);
-    $('resetTest').addEventListener('click', ()=>{ $('testSetup').style.display='block'; $('testRun').style.display='none'; $('testSummary').style.display='none'; });
-
-    function renderHistory(){
-      const box=$('history'); if(!HIST.length){ box.textContent='No attempts yet.'; return; }
-      const rows = HIST.map(h=>{
-        const d = new Date(h.when); const date = d.toLocaleString();
-        return `<tr><td>${date}</td><td>${h.lesson}</td><td>${h.dir==='term2def'?'T→D':'D→T'}</td><td>${h.q}</td><td>${h.correct}</td><td>${h.wrong}</td><td class='right'>${h.score}%</td></tr>`;
-      }).join('');
-      box.innerHTML = `<table><thead><tr><th>Date</th><th>Lesson</th><th>Dir</th><th>Q</th><th>✔</th><th>✖</th><th class='right'>Score</th></tr></thead><tbody>${rows}</tbody></table>`;
-    }
-
-    $('copySummary').addEventListener('click', async ()=>{
-      const text = $('sumText').innerText; try{ await navigator.clipboard.writeText(text); }catch(e){ console.log(e); }
-    });
-
-    $('clearHistory').addEventListener('click',()=>{ if(confirm('Clear all test history?')){ HIST=[]; saveJSON(LSK.HIST,HIST); renderHistory(); }});
-
-    // --- Data management ----------------------------------------------------
-    function exportJSON(){ $('dataArea').value = JSON.stringify(DATA, null, 2); }
-    function importData(){
-      const raw = $('dataArea').value.trim(); if(!raw) return;
-      let parsed=null;
-      try{
-        if(raw.startsWith('{')){ parsed = JSON.parse(raw); }
-        else{ // CSV: term,definition per line
-          const lines = raw.split(/\r?\n/).filter(Boolean);
-          parsed = { 'Imported List': lines.map(l=>{ const [a,b] = l.split(','); return {term:(a||'').trim(), definition:(b||'').trim()}; }) };
-        }
-      }catch(e){ alert('Could not parse. Provide valid JSON or CSV (term,definition).'); return; }
-      if(!confirm('Replace current data with imported lists?')) return;
-      DATA = parsed; saveJSON(LSK.DATA, DATA); refreshLessonOptions(); renderAll();
-    }
-
-    $('exportBtn').addEventListener('click', exportJSON);
-    $('importBtn').addEventListener('click', importData);
-
-    $('clearAllBtn').addEventListener('click', ()=>{
-      if(!confirm('Reset ALL local data (words, progress, history)?')) return;
-      localStorage.removeItem(LSK.DATA);
-      localStorage.removeItem(LSK.PROG);
-      localStorage.removeItem(LSK.HIST);
-      localStorage.removeItem(LSK.LAST);
-      DATA = JSON.parse(JSON.stringify(defaultData));
-      PROG = {}; HIST = [];
-      refreshLessonOptions(); renderAll();
-    });
-
-    // Quick add & edit
-    $('newListBtn').addEventListener('click', ()=>{
-      const name = prompt('New list name?'); if(!name) return;
-      if(DATA[name]){ alert('List already exists.'); return; }
-      DATA[name] = [];
-      saveJSON(LSK.DATA,DATA); refreshLessonOptions(); lessonSel.value = name; saveJSON(LSK.LAST,name); renderAll(); exportJSON();
-    });
-
-    $('editListBtn').addEventListener('click', ()=>{
-      const lesson = lessonSel.value; const arr = DATA[lesson];
-      const json = JSON.stringify(arr, null, 2);
-      const next = prompt(`Edit JSON for: ${lesson}\nFormat: [{"term":"","definition":""}, …]`, json);
-      if(next===null) return;
-      try{ const parsed = JSON.parse(next); if(!Array.isArray(parsed)) throw new Error('must be array'); DATA[lesson]=parsed; saveJSON(LSK.DATA,DATA); ensureProgForLesson(lesson); renderAll(); exportJSON(); }
-      catch(e){ alert('Invalid JSON. No changes saved.'); }
-    });
-
-    lessonSel.addEventListener('change', ()=>{ saveJSON(LSK.LAST, lessonSel.value); renderAll(); });
-
-    // --- Views --------------------------------------------------------------
-    function showView(which){
-      $('studyView').style.display = which==='study'?'grid':'none';
-      $('practiceView').style.display = which==='practice'?'grid':'none';
-      $('testView').style.display = which==='test'?'grid':'none';
-    }
-
-    $('modeStudy').addEventListener('click', startStudy);
-    $('modePractice').addEventListener('click', startPractice);
-    $('modeTest').addEventListener('click', ()=>{ showView('test'); $('testSetup').style.display='block'; $('testRun').style.display='none'; $('testSummary').style.display='none'; });
-
-    // --- First render -------------------------------------------------------
-    function renderAll(){ renderKpis(); if($('studyView').style.display!=='none'){ renderFlash(); renderWordList(); } renderHistory(); }
-
-    (function init(){
-      if(!DATA || !Object.keys(DATA).length){ DATA = defaultData; saveJSON(LSK.DATA, DATA); }
-      refreshLessonOptions(); renderAll();
-    })();
+    // Init
+    listSelect.value = currentListName; updateKpis();
   </script>
 </body>
 </html>
+
